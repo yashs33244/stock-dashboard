@@ -33,7 +33,7 @@ export class AlphaVantageAPI {
       const data = await response.json()
 
       if (data.Note || data["Error Message"]) {
-        console.log(`[v0] Alpha Vantage API limit or error for ${symbol}:`, data.Note || data["Error Message"])
+        console.log(`  Alpha Vantage API limit or error for ${symbol}:`, data.Note || data["Error Message"])
         // Return mock data when API limit is reached
         return this.getMockData(symbol)
       }
@@ -41,7 +41,7 @@ export class AlphaVantageAPI {
       const quote = data["Global Quote"]
 
       if (!quote || !quote["01. symbol"]) {
-        console.log(`[v0] Invalid Alpha Vantage response for ${symbol}:`, data)
+        console.log(`  Invalid Alpha Vantage response for ${symbol}:`, data)
         return this.getMockData(symbol)
       }
 
@@ -53,7 +53,7 @@ export class AlphaVantageAPI {
         volume: Number.parseInt(quote["06. volume"]),
       }
     } catch (error) {
-      console.log(`[v0] Alpha Vantage API error for ${symbol}:`, error)
+      console.log(`  Alpha Vantage API error for ${symbol}:`, error)
       return this.getMockData(symbol)
     }
   }
@@ -107,7 +107,7 @@ export class AlphaVantageAPI {
         }))
         .slice(0, 100)
     } catch (error) {
-      console.log(`[v0] Alpha Vantage chart data error for ${symbol}:`, error)
+      console.log(`  Alpha Vantage chart data error for ${symbol}:`, error)
       return this.getMockChartData(symbol)
     }
   }
@@ -163,7 +163,7 @@ export class FinnhubAPI {
         low52Week: data.l,
       }
     } catch (error) {
-      console.log(`[v0] Finnhub API error for ${symbol}:`, error)
+      console.log(`  Finnhub API error for ${symbol}:`, error)
       return this.getMockData(symbol)
     }
   }
@@ -220,10 +220,10 @@ export class IndianStockAPI {
 
   async getQuote(symbol: string): Promise<StockData> {
     try {
-      console.log(`[v0] Using mock data for Indian Stock API - ${symbol}`)
+      console.log(`  Using mock data for Indian Stock API - ${symbol}`)
       return this.getMockData(symbol)
     } catch (error) {
-      console.log(`[v0] Indian Stock API error for ${symbol}:`, error)
+      console.log(`  Indian Stock API error for ${symbol}:`, error)
       return this.getMockData(symbol)
     }
   }
