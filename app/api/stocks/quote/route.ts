@@ -53,17 +53,17 @@ export async function POST(request: NextRequest) {
     // Check if any quotes indicate rate limiting (mock data)
     if (successfulQuotes.length > 0) {
       // If we got mock data, it means rate limiting occurred
-      const hasMockData = successfulQuotes.some(quote => 
+      const hasMockData = successfulQuotes.some(quote =>
         quote.symbol && quote.price && quote.price > 0 && quote.price < 1000 // Mock data typically has reasonable prices
       )
-      
+
       if (hasMockData) {
         isRateLimited = true
         rateLimitMessage = "API rate limit exceeded, showing sample data"
       }
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       data: successfulQuotes,
       isMockData: isRateLimited,
       rateLimitMessage: isRateLimited ? rateLimitMessage : undefined

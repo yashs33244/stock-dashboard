@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       data: mostActiveData,
       isMockData: isRateLimited || mostActiveData.length === 0,
       rateLimitMessage: isRateLimited ? rateLimitMessage : undefined

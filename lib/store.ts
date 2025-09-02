@@ -4,7 +4,7 @@ import { DashboardStorage } from "./storage"
 
 export interface Widget {
   id: string
-  type: "table" | "card" | "chart" | "news" | "mostActive" | "technicalIndicators" | "companyProfile" | "earnings" | "priceChart"
+  type: "table" | "card" | "news" | "mostActive" | "technicalIndicators" | "companyProfile" | "earnings" | "priceChart"
   title: string
   position: { x: number; y: number }
   size: { width: number; height: number }

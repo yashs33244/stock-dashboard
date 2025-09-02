@@ -3,7 +3,7 @@
 import { useDashboardStore } from "@/lib/store"
 import { StockTableWidget } from "./stock-table-widget"
 import { FinanceCardWidget } from "./finance-card-widget"
-import { ChartWidget } from "./chart-widget"
+
 import { NewsWidget } from "./news-widget"
 import { MostActiveWidget } from "./most-active-widget"
 import { TechnicalIndicatorsWidget } from "./technical-indicators-widget"
@@ -33,8 +33,7 @@ export function WidgetRenderer({ widget }: WidgetRendererProps) {
       return <StockTableWidget widget={widget} onUpdate={handleUpdate} onConfigure={handleConfigure} />
     case "card":
       return <FinanceCardWidget widget={widget} onUpdate={handleUpdate} onConfigure={handleConfigure} />
-    case "chart":
-      return <ChartWidget widget={widget} onUpdate={handleUpdate} onConfigure={handleConfigure} />
+
     case "news":
       return <NewsWidget widget={widget} onUpdate={handleUpdate} onConfigure={handleConfigure} />
     case "mostActive":

@@ -36,7 +36,7 @@ export function DashboardSidebar({ collapsed, onToggle }: DashboardSidebarProps)
   const [showAddMenu, setShowAddMenu] = useState(false)
   const [showDataPanel, setShowDataPanel] = useState(false)
 
-  const handleAddWidget = (type: "table" | "card" | "chart" | "news" | "mostActive" | "technicalIndicators" | "companyProfile" | "earnings" | "priceChart") => {
+  const handleAddWidget = (type: "table" | "card" | "news" | "mostActive" | "technicalIndicators" | "companyProfile" | "earnings" | "priceChart") => {
     const defaultConfigs = {
       table: {
         apiProvider: "alphavantage" as const,
@@ -49,13 +49,7 @@ export function DashboardSidebar({ collapsed, onToggle }: DashboardSidebarProps)
         cardType: "watchlist" as const,
         refreshInterval: 30000,
       },
-      chart: {
-        apiProvider: "alphavantage" as const,
-        symbols: ["AAPL"],
-        chartType: "line" as const,
-        interval: "5min",
-        refreshInterval: 60000,
-      },
+
       news: {
         apiProvider: "alphavantage" as const,
         topics: "technology",
@@ -110,8 +104,7 @@ export function DashboardSidebar({ collapsed, onToggle }: DashboardSidebarProps)
         return <Table className="h-4 w-4" />
       case "card":
         return <CreditCard className="h-4 w-4" />
-      case "chart":
-        return <BarChart3 className="h-4 w-4" />
+
       case "news":
         return <Newspaper className="h-4 w-4" />
       case "mostActive":
@@ -135,8 +128,7 @@ export function DashboardSidebar({ collapsed, onToggle }: DashboardSidebarProps)
         return "Table"
       case "card":
         return "Card"
-      case "chart":
-        return "Chart"
+
       case "news":
         return "News"
       case "mostActive":
@@ -218,15 +210,7 @@ export function DashboardSidebar({ collapsed, onToggle }: DashboardSidebarProps)
                   <CreditCard className="h-4 w-4 mr-2" />
                   Finance Card
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start text-slate-300 hover:bg-slate-700 hover:text-slate-100"
-                  onClick={() => handleAddWidget("chart")}
-                >
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Price Chart
-                </Button>
+
                 <Button
                   variant="ghost"
                   size="sm"
