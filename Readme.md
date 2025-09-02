@@ -85,10 +85,15 @@ finance-dashboard/
 ├── app/                          # Next.js App Router
 │   ├── api/                      # API routes
 │   │   └── stocks/               # Stock-related endpoints
-│   │       ├── chart/            # Chart data endpoint
+│   │       ├── price-chart/      # Price chart data endpoint
 │   │       ├── most-active/      # Most active stocks
 │   │       ├── news/             # News data endpoint
-│   │       └── quote/            # Stock quotes endpoint
+│   │       ├── quote/            # Stock quotes endpoint
+│   │       ├── technical-indicators/ # Technical indicators endpoint
+│   │       ├── fundamental-data/ # Fundamental data endpoint
+│   │       ├── company-profile/  # Company profile endpoint
+│   │       ├── earnings/         # Earnings calendar endpoint
+│   │       └── analyst-data/     # Analyst data endpoint
 │   ├── globals.css               # Global styles
 │   ├── layout.tsx                # Root layout
 │   └── page.tsx                  # Main dashboard page
@@ -110,24 +115,30 @@ finance-dashboard/
 │   │   ├── connection-status.tsx # Connection status indicator
 │   │   └── [other-ui-components] # Additional UI components
 │   └── widgets/                  # Dashboard widgets
-│       ├── chart-widget.tsx      # Stock chart widget
+│       ├── price-chart-widget.tsx # Price chart widget
 │       ├── finance-card-widget.tsx # Finance card widget
 │       ├── most-active-widget.tsx # Most active stocks widget
 │       ├── news-widget.tsx       # News widget
 │       ├── stock-table-widget.tsx # Stock table widget
+│       ├── technical-indicators-widget.tsx # Technical indicators widget
+│       ├── company-profile-widget.tsx # Company profile widget
+│       ├── earnings-widget.tsx   # Earnings calendar widget
 │       └── widget-renderer.tsx   # Widget renderer
 ├── hooks/                        # Custom React hooks
 │   ├── use-connection-status.ts  # Connection status hook
 │   ├── use-dashboard-data.ts     # Dashboard data hook
 │   ├── use-most-active-stocks.ts # Most active stocks hook
-│   ├── use-stock-chart.ts        # Stock chart hook
+
 │   ├── use-stock-news.ts         # Stock news hook
 │   ├── use-stock-quotes.ts       # Stock quotes hook
 │   └── index.ts                  # Hooks barrel export
 ├── lib/                          # Utility libraries
-│   ├── api.ts                    # API client
+│   ├── api-explorer.ts           # API exploration utility
+│   ├── api-tester.ts             # API testing utility
 │   ├── config.ts                 # Configuration management
+│   ├── error-sanitizer.ts        # Error message sanitization
 │   ├── query-client.ts           # TanStack Query client
+│   ├── rate-limit-detector.ts    # Rate limit detection utility
 │   ├── store.ts                  # State management
 │   ├── types.ts                  # TypeScript type definitions
 │   └── utils.ts                  # Utility functions
@@ -170,9 +181,14 @@ export const config = {
     baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || '/api',
     stocks: {
       quote: '/stocks/quote',
-      chart: '/stocks/chart',
+      priceChart: '/stocks/price-chart',
       mostActive: '/stocks/most-active',
       news: '/stocks/news',
+      technicalIndicators: '/stocks/technical-indicators',
+      fundamentalData: '/stocks/fundamental-data',
+      companyProfile: '/stocks/company-profile',
+      earnings: '/stocks/earnings',
+      analystData: '/stocks/analyst-data',
     },
   },
   providers: {
@@ -190,9 +206,12 @@ export const config = {
   },
   refreshIntervals: {
     stockQuotes: 30 * 1000, // 30 seconds
-    stockCharts: 60 * 1000, // 1 minute
+    priceCharts: 60 * 1000, // 1 minute
     mostActive: 2 * 60 * 1000, // 2 minutes
     news: 5 * 60 * 1000, // 5 minutes
+    technicalIndicators: 5 * 60 * 1000, // 5 minutes
+    companyProfile: 10 * 60 * 1000, // 10 minutes
+    earnings: 10 * 60 * 1000, // 10 minutes
   },
 }
 ```
@@ -235,8 +254,8 @@ export const queryKeys = {
     all: ['stocks'] as const,
     quotes: (provider: string, symbols: string[]) => 
       ['stocks', 'quotes', provider, symbols] as const,
-    chart: (provider: string, symbol: string, interval?: string) => 
-      ['stocks', 'chart', provider, symbol, interval] as const,
+    priceChart: (provider: string, symbol: string, interval?: string) => 
+      ['stocks', 'priceChart', provider, symbol, interval] as const,
     // ... other keys
   },
 }
@@ -252,10 +271,10 @@ export const queryKeys = {
 - **Data Source**: `useStockQuotes` hook
 - **Refresh Interval**: 30 seconds
 
-#### ChartWidget
-- **Purpose**: Visualizes stock price data as charts
-- **Features**: Multiple chart types (line, area), time intervals
-- **Data Source**: `useStockChart` hook
+#### PriceChartWidget
+- **Purpose**: Visualizes stock price data as interactive area charts
+- **Features**: OHLC data, multiple time intervals, gradient fills, mock data fallback
+- **Data Source**: Alpha Vantage API with mock data fallback
 - **Refresh Interval**: 1 minute
 
 #### MostActiveWidget
@@ -275,6 +294,24 @@ export const queryKeys = {
 - **Features**: Multiple card types (watchlist, gainers, losers)
 - **Data Source**: `useStockQuotes` hook
 - **Refresh Interval**: 30 seconds
+
+#### TechnicalIndicatorsWidget
+- **Purpose**: Displays technical analysis indicators
+- **Features**: SMA, EMA, RSI, MACD indicators with customizable parameters
+- **Data Source**: Alpha Vantage API
+- **Refresh Interval**: 5 minutes
+
+#### CompanyProfileWidget
+- **Purpose**: Shows comprehensive company information
+- **Features**: Company details, financial metrics, business description
+- **Data Source**: Finnhub API
+- **Refresh Interval**: 10 minutes
+
+#### EarningsWidget
+- **Purpose**: Displays earnings calendar and results
+- **Features**: EPS estimates vs actual, revenue data, surprise calculations
+- **Data Source**: Finnhub API
+- **Refresh Interval**: 10 minutes
 
 ### Layout Components
 
@@ -323,33 +360,39 @@ export const queryKeys = {
 }
 ```
 
-### Chart Data Endpoint (`/api/stocks/chart`)
+### Price Chart Data Endpoint (`/api/stocks/price-chart`)
 
-**Method**: POST  
-**Purpose**: Fetch historical price data for charts
+**Method**: GET  
+**Purpose**: Fetch historical price data for interactive charts
 
-**Request Body**:
-```json
-{
-  "provider": "alphavantage",
-  "symbol": "AAPL",
-  "interval": "5min"
-}
+**Query Parameters**:
+```
+symbol=AAPL&interval=daily
 ```
 
 **Response**:
 ```json
 {
-  "data": [
-    {
-      "timestamp": "2024-01-01T09:30:00Z",
-      "open": 150.00,
-      "high": 151.50,
-      "low": 149.75,
-      "close": 150.25,
-      "volume": 1000000
-    }
-  ]
+  "data": {
+    "metaData": {
+      "symbol": "AAPL",
+      "lastRefreshed": "2024-01-01",
+      "interval": "daily",
+      "timeZone": "US/Eastern"
+    },
+    "timeSeries": [
+      {
+        "date": "2024-01-01",
+        "open": 150.00,
+        "high": 151.50,
+        "low": 149.75,
+        "close": 150.25,
+        "volume": 1000000
+      }
+    ]
+  },
+  "isMockData": false,
+  "rateLimitMessage": null
 }
 ```
 
@@ -379,6 +422,36 @@ export const queryKeys = {
 }
 ```
 
+### Technical Indicators Endpoint (`/api/stocks/technical-indicators`)
+
+**Method**: GET  
+**Purpose**: Fetch technical analysis indicators
+
+**Query Parameters**:
+```
+symbol=AAPL&indicator=SMA&timePeriod=20&interval=daily&seriesType=close
+```
+
+### Company Profile Endpoint (`/api/stocks/company-profile`)
+
+**Method**: GET  
+**Purpose**: Fetch company profile information
+
+**Query Parameters**:
+```
+symbol=AAPL
+```
+
+### Earnings Calendar Endpoint (`/api/stocks/earnings`)
+
+**Method**: GET  
+**Purpose**: Fetch earnings calendar data
+
+**Query Parameters**:
+```
+from=2024-01-01&to=2024-12-31
+```
+
 ## 🎣 Hooks
 
 ### Data Fetching Hooks
@@ -392,15 +465,7 @@ const { data, isLoading, error, refetch } = useStockQuotes({
 })
 ```
 
-#### useStockChart
-```typescript
-const { data, isLoading, error, refetch } = useStockChart({
-  provider: 'alphavantage',
-  symbol: 'AAPL',
-  interval: '5min',
-  refetchInterval: 60000,
-})
-```
+
 
 #### useMostActiveStocks
 ```typescript
@@ -425,7 +490,7 @@ const { data, isLoading, error, refetch } = useStockNews({
 const { data } = useDashboardData({
   provider: 'alphavantage',
   symbols: ['AAPL', 'MSFT', 'GOOGL'],
-  chartSymbol: 'AAPL',
+  priceChartSymbol: 'AAPL',
   newsTopics: 'technology',
 })
 ```
@@ -516,15 +581,17 @@ Each widget can be configured with:
 ## ✨ Features
 
 ### Core Features
-- ✅ **Real-time Data**: Live stock quotes, charts, and news
-- ✅ **Multiple Providers**: Support for 3 different data providers
-- ✅ **Customizable Dashboard**: Drag-and-drop widget management
+- ✅ **Real-time Data**: Live stock quotes, price charts, and news
+- ✅ **Multiple Providers**: Support for 3 different data providers (Alpha Vantage, Finnhub, Indian Stock)
+- ✅ **Customizable Dashboard**: Drag-and-drop widget management with 8 widget types
 - ✅ **Responsive Design**: Works on desktop, tablet, and mobile
 - ✅ **Dark Theme**: Modern dark UI with glassmorphism effects
 - ✅ **Error Handling**: Comprehensive error states and recovery
 - ✅ **Loading States**: Smooth loading indicators
 - ✅ **Search & Filter**: Search stocks and filter data
 - ✅ **Pagination**: Handle large datasets efficiently
+- ✅ **Mock Data Fallback**: Graceful fallback to mock data when APIs are rate limited
+- ✅ **Rate Limit Detection**: Clear indicators when using demo data
 
 ### Advanced Features
 - ✅ **Background Sync**: Data updates automatically in background
@@ -534,6 +601,10 @@ Each widget can be configured with:
 - ✅ **Retry Logic**: Automatic retry on failed requests
 - ✅ **Type Safety**: Full TypeScript support
 - ✅ **Accessibility**: ARIA-compliant components
+- ✅ **API Key Security**: Sanitized error messages to prevent API key exposure
+- ✅ **Technical Analysis**: SMA, EMA, RSI, MACD indicators
+- ✅ **Company Intelligence**: Comprehensive company profiles and earnings data
+- ✅ **Interactive Charts**: OHLC data with gradient fills and tooltips
 
 ## ⚡ Performance Optimizations
 
@@ -563,12 +634,15 @@ Each widget can be configured with:
 2. **API Errors**: Invalid responses from data providers
 3. **Validation Errors**: Invalid input parameters
 4. **Rate Limiting**: API rate limit exceeded
+5. **Data Sanitization**: Sensitive information filtering
 
 ### Error Recovery
 - **Automatic Retry**: Failed requests retry automatically
 - **Exponential Backoff**: Increasing delays between retries
 - **Fallback Data**: Mock data when APIs are unavailable
 - **User Notifications**: Clear error messages for users
+- **Error Sanitization**: Prevents API key exposure in error messages
+- **Rate Limit Handling**: Graceful degradation with mock data
 
 ### Error Boundaries
 - **Component Level**: Individual widget error handling
