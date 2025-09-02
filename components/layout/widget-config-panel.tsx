@@ -177,7 +177,7 @@ export function WidgetConfigPanel() {
           </Card>
 
           {/* Widget-specific Settings */}
-          {widget.type === "chart" && (
+          {widget.type === "priceChart" && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm">Chart Settings</CardTitle>
