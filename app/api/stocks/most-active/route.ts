@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ data: mostActiveData })
   } catch (error) {
-    console.error("[v0] Most Active API route error:", error)
+    console.error(" Most Active API route error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

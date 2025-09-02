@@ -25,7 +25,7 @@ const sourceSans = Source_Sans_3({
 export const metadata: Metadata = {
   title: "Finance Dashboard - Professional Trading Platform",
   description: "Customizable finance dashboard with real-time data visualization and widget management",
-  generator: "v0.app",
+  generator: "Yash Singh",
 }
 
 export default function RootLayout({

@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ data: chartData })
   } catch (error) {
-    console.error("[v0] Chart API route error:", error)
+    console.error(" Chart API route error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

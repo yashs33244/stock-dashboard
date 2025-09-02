@@ -78,7 +78,7 @@ export function MostActiveWidget({ widget, onUpdate, onConfigure }: MostActiveWi
       </CardHeader>
       <CardContent>
         {error && (
-          <div className="text-red-400 text-sm mb-4 p-3 bg-red-900/20 border border-red-800/30 rounded-md">{error}</div>
+          <div className="text-red-400 text-sm mb-4 p-3 bg-red-900/20 border border-red-800/30 rounded-md">{error.message}</div>
         )}
 
         {loading && (!stocksData || stocksData.length === 0) ? (

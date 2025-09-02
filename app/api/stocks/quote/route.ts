@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
         try {
           return await api.getQuote(symbol)
         } catch (error) {
-          console.log(`[v0] Error fetching quote for ${symbol}:`, error)
+          console.log(` Error fetching quote for ${symbol}:`, error)
           throw error
         }
       }),
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ data: successfulQuotes })
   } catch (error) {
-    console.error("[v0] API route error:", error)
+    console.error(" API route error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ data: newsData })
   } catch (error) {
-    console.error("[v0] News API route error:", error)
+    console.error(" News API route error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
