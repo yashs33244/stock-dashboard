@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { detectRateLimit } from "@/lib/rate-limit-detector"
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,12 +23,19 @@ export async function POST(request: NextRequest) {
 
     let newsData = []
 
+    let isRateLimited = false
+    let rateLimitMessage = ""
+
     if (provider === "alphavantage") {
       const url = `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&topics=${topics || "technology"}&limit=${limit || 10}&apikey=${apiKey}`
       const response = await fetch(url)
       const data = await response.json()
 
-      if (data.feed) {
+      const rateLimitInfo = detectRateLimit(response, data)
+      isRateLimited = rateLimitInfo.isRateLimited
+      rateLimitMessage = rateLimitInfo.message || ""
+
+      if (!isRateLimited && data.feed) {
         newsData = data.feed.map((item: any) => ({
           title: item.title,
           summary: item.summary,
@@ -43,17 +51,24 @@ export async function POST(request: NextRequest) {
       const response = await fetch(url)
       const data = await response.json()
 
-      newsData = data.slice(0, limit || 10).map((item: any) => ({
-        title: item.headline,
-        summary: item.summary,
-        url: item.url,
-        source: item.source,
-        published: new Date(item.datetime * 1000).toISOString(),
-        image: item.image,
-      }))
+      const rateLimitInfo = detectRateLimit(response, data)
+      isRateLimited = rateLimitInfo.isRateLimited
+      rateLimitMessage = rateLimitInfo.message || ""
+
+      if (!isRateLimited && Array.isArray(data)) {
+        newsData = data.slice(0, limit || 10).map((item: any) => ({
+          title: item.headline,
+          summary: item.summary,
+          url: item.url,
+          source: item.source,
+          published: new Date(item.datetime * 1000).toISOString(),
+          image: item.image,
+        }))
+      }
     }
 
-    if (newsData.length === 0) {
+    // Only show mock data if rate limited or no data received
+    if (isRateLimited || newsData.length === 0) {
       newsData = [
         {
           title: "Market Reaches New Heights Amid Tech Rally",
@@ -80,7 +95,11 @@ export async function POST(request: NextRequest) {
       ]
     }
 
-    return NextResponse.json({ data: newsData })
+    return NextResponse.json({ 
+      data: newsData,
+      isMockData: isRateLimited || newsData.length === 0,
+      rateLimitMessage: isRateLimited ? rateLimitMessage : undefined
+    })
   } catch (error) {
     console.error(" News API route error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

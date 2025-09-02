@@ -1,12 +1,14 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Settings, RefreshCw, TrendingUp, TrendingDown, Activity } from "lucide-react"
 import { useMostActiveStocks } from "@/hooks/use-most-active-stocks"
 import type { MostActiveData } from "@/lib/types"
 import type { Widget } from "@/lib/store"
+import { MockDataIndicator } from "@/components/ui/mock-data-indicator"
+import { sanitizeErrorForDisplay } from "@/lib/error-sanitizer"
 
 interface MostActiveWidgetProps {
   widget: Widget
@@ -16,7 +18,7 @@ interface MostActiveWidgetProps {
 
 export function MostActiveWidget({ widget, onUpdate, onConfigure }: MostActiveWidgetProps) {
   const {
-    data: stocksData,
+    data: stocksResponse,
     isLoading: loading,
     error,
     refetch: forceRefresh,
@@ -24,6 +26,10 @@ export function MostActiveWidget({ widget, onUpdate, onConfigure }: MostActiveWi
     provider: widget.config.apiProvider,
     refetchInterval: widget.config.refreshInterval || 120000, // 2 minutes
   })
+
+  const stocksData = useMemo(() => stocksResponse?.data || [], [stocksResponse?.data])
+  const isMockData = useMemo(() => stocksResponse?.isMockData || false, [stocksResponse?.isMockData])
+  const rateLimitMessage = useMemo(() => stocksResponse?.rateLimitMessage, [stocksResponse?.rateLimitMessage])
 
   // Update parent component when data changes
   useEffect(() => {
@@ -57,6 +63,10 @@ export function MostActiveWidget({ widget, onUpdate, onConfigure }: MostActiveWi
           <CardTitle className="text-lg font-semibold text-slate-100">{widget.title}</CardTitle>
         </div>
         <div className="flex items-center space-x-2">
+          <MockDataIndicator 
+            isMockData={isMockData} 
+            rateLimitMessage={rateLimitMessage}
+          />
           <Button
             variant="ghost"
             size="sm"

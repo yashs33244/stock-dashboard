@@ -1,12 +1,13 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Settings, RefreshCw, ExternalLink, Clock, TrendingUp } from "lucide-react"
 import { useStockNews } from "@/hooks/use-stock-news"
 import type { NewsData } from "@/lib/types"
+import { MockDataIndicator } from "@/components/ui/mock-data-indicator"
 import type { Widget } from "@/lib/store"
 
 interface NewsWidgetProps {
@@ -17,7 +18,7 @@ interface NewsWidgetProps {
 
 export function NewsWidget({ widget, onUpdate, onConfigure }: NewsWidgetProps) {
   const {
-    data: newsData,
+    data: newsResponse,
     isLoading: loading,
     error,
     refetch: forceRefresh,
@@ -27,6 +28,10 @@ export function NewsWidget({ widget, onUpdate, onConfigure }: NewsWidgetProps) {
     limit: widget.config.limit || 10,
     refetchInterval: widget.config.refreshInterval || 300000, // 5 minutes
   })
+
+  const newsData = useMemo(() => newsResponse?.data || [], [newsResponse?.data])
+  const isMockData = useMemo(() => newsResponse?.isMockData || false, [newsResponse?.isMockData])
+  const rateLimitMessage = useMemo(() => newsResponse?.rateLimitMessage, [newsResponse?.rateLimitMessage])
 
   // Update parent component when data changes
   useEffect(() => {
@@ -72,6 +77,10 @@ export function NewsWidget({ widget, onUpdate, onConfigure }: NewsWidgetProps) {
           <CardTitle className="text-lg font-semibold text-slate-100">{widget.title}</CardTitle>
         </div>
         <div className="flex items-center space-x-2">
+          <MockDataIndicator 
+            isMockData={isMockData} 
+            rateLimitMessage={rateLimitMessage}
+          />
           <Button
             variant="ghost"
             size="sm"

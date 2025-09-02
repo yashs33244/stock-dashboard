@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { detectRateLimit } from "@/lib/rate-limit-detector"
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,13 +22,19 @@ export async function POST(request: NextRequest) {
     }
 
     let mostActiveData = []
+    let isRateLimited = false
+    let rateLimitMessage = ""
 
     if (provider === "alphavantage") {
       const url = `https://www.alphavantage.co/query?function=TOP_GAINERS_LOSERS&apikey=${apiKey}`
       const response = await fetch(url)
       const data = await response.json()
 
-      if (data.most_actively_traded) {
+      const rateLimitInfo = detectRateLimit(response, data)
+      isRateLimited = rateLimitInfo.isRateLimited
+      rateLimitMessage = rateLimitInfo.message || ""
+
+      if (!isRateLimited && data.most_actively_traded) {
         mostActiveData = data.most_actively_traded.slice(0, 10).map((item: any) => ({
           symbol: item.ticker,
           price: Number.parseFloat(item.price),
@@ -38,7 +45,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (mostActiveData.length === 0) {
+    // Only show mock data if rate limited or no data received
+    if (isRateLimited || mostActiveData.length === 0) {
       const mockSymbols = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NFLX", "AMD", "INTC"]
       mostActiveData = mockSymbols.map((symbol) => {
         const basePrice = Math.random() * 200 + 50
@@ -53,7 +61,11 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    return NextResponse.json({ data: mostActiveData })
+    return NextResponse.json({ 
+      data: mostActiveData,
+      isMockData: isRateLimited || mostActiveData.length === 0,
+      rateLimitMessage: isRateLimited ? rateLimitMessage : undefined
+    })
   } catch (error) {
     console.error(" Most Active API route error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

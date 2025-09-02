@@ -17,6 +17,11 @@ import {
   Trash2,
   ChevronDown,
   Database,
+  Newspaper,
+  TrendingUp,
+  Activity,
+  Building2,
+  Calendar,
 } from "lucide-react"
 
 interface DashboardSidebarProps {
@@ -31,7 +36,7 @@ export function DashboardSidebar({ collapsed, onToggle }: DashboardSidebarProps)
   const [showAddMenu, setShowAddMenu] = useState(false)
   const [showDataPanel, setShowDataPanel] = useState(false)
 
-  const handleAddWidget = (type: "table" | "card" | "chart") => {
+  const handleAddWidget = (type: "table" | "card" | "chart" | "news" | "mostActive" | "technicalIndicators" | "companyProfile" | "earnings" | "priceChart") => {
     const defaultConfigs = {
       table: {
         apiProvider: "alphavantage" as const,
@@ -50,6 +55,42 @@ export function DashboardSidebar({ collapsed, onToggle }: DashboardSidebarProps)
         chartType: "line" as const,
         interval: "5min",
         refreshInterval: 60000,
+      },
+      news: {
+        apiProvider: "alphavantage" as const,
+        topics: "technology",
+        limit: 10,
+        refreshInterval: 300000,
+      },
+      mostActive: {
+        apiProvider: "alphavantage" as const,
+        refreshInterval: 120000,
+      },
+      technicalIndicators: {
+        apiProvider: "alphavantage" as const,
+        symbols: ["AAPL"],
+        indicator: "SMA",
+        timePeriod: "20",
+        interval: "daily",
+        seriesType: "close",
+        refreshInterval: 300000,
+      },
+      companyProfile: {
+        apiProvider: "finnhub" as const,
+        symbols: ["AAPL"],
+        refreshInterval: 600000,
+      },
+      earnings: {
+        apiProvider: "finnhub" as const,
+        fromDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        toDate: new Date().toISOString().split('T')[0],
+        refreshInterval: 600000,
+      },
+      priceChart: {
+        apiProvider: "alphavantage" as const,
+        symbols: ["AAPL"],
+        interval: "daily",
+        refreshInterval: 300000,
       },
     }
 
@@ -71,6 +112,18 @@ export function DashboardSidebar({ collapsed, onToggle }: DashboardSidebarProps)
         return <CreditCard className="h-4 w-4" />
       case "chart":
         return <BarChart3 className="h-4 w-4" />
+      case "news":
+        return <Newspaper className="h-4 w-4" />
+      case "mostActive":
+        return <TrendingUp className="h-4 w-4" />
+      case "technicalIndicators":
+        return <Activity className="h-4 w-4" />
+      case "companyProfile":
+        return <Building2 className="h-4 w-4" />
+      case "earnings":
+        return <Calendar className="h-4 w-4" />
+      case "priceChart":
+        return <BarChart3 className="h-4 w-4" />
       default:
         return <Settings className="h-4 w-4" />
     }
@@ -84,6 +137,18 @@ export function DashboardSidebar({ collapsed, onToggle }: DashboardSidebarProps)
         return "Card"
       case "chart":
         return "Chart"
+      case "news":
+        return "News"
+      case "mostActive":
+        return "Most Active"
+      case "technicalIndicators":
+        return "Technical Indicators"
+      case "companyProfile":
+        return "Company Profile"
+      case "earnings":
+        return "Earnings"
+      case "priceChart":
+        return "Price Chart"
       default:
         return "Widget"
     }
@@ -158,6 +223,60 @@ export function DashboardSidebar({ collapsed, onToggle }: DashboardSidebarProps)
                   size="sm"
                   className="w-full justify-start text-slate-300 hover:bg-slate-700 hover:text-slate-100"
                   onClick={() => handleAddWidget("chart")}
+                >
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Price Chart
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-slate-300 hover:bg-slate-700 hover:text-slate-100"
+                  onClick={() => handleAddWidget("news")}
+                >
+                  <Newspaper className="h-4 w-4 mr-2" />
+                  Financial News
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-slate-300 hover:bg-slate-700 hover:text-slate-100"
+                  onClick={() => handleAddWidget("mostActive")}
+                >
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Most Active Stocks
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-slate-300 hover:bg-slate-700 hover:text-slate-100"
+                  onClick={() => handleAddWidget("technicalIndicators")}
+                >
+                  <Activity className="h-4 w-4 mr-2" />
+                  Technical Indicators
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-slate-300 hover:bg-slate-700 hover:text-slate-100"
+                  onClick={() => handleAddWidget("companyProfile")}
+                >
+                  <Building2 className="h-4 w-4 mr-2" />
+                  Company Profile
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-slate-300 hover:bg-slate-700 hover:text-slate-100"
+                  onClick={() => handleAddWidget("earnings")}
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Earnings Calendar
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-slate-300 hover:bg-slate-700 hover:text-slate-100"
+                  onClick={() => handleAddWidget("priceChart")}
                 >
                   <BarChart3 className="h-4 w-4 mr-2" />
                   Price Chart

@@ -5,8 +5,9 @@ import { useState } from "react"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { Button } from "@/components/ui/button"
-import { GripVertical, Maximize2, Minimize2 } from "lucide-react"
+import { GripVertical, Maximize2, Minimize2, X } from "lucide-react"
 import type { Widget } from "@/lib/store"
+import { useDashboardStore } from "@/lib/store"
 
 interface DraggableWidgetProps {
   widget: Widget
@@ -16,6 +17,7 @@ interface DraggableWidgetProps {
 
 export function DraggableWidget({ widget, children, onResize }: DraggableWidgetProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const { removeWidget } = useDashboardStore()
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: widget.id,
     data: {
@@ -71,6 +73,18 @@ export function DraggableWidget({ widget, children, onResize }: DraggableWidgetP
             {isExpanded ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
           </Button>
         </div>
+      </div>
+
+      {/* Remove Button */}
+      <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Button
+          variant="destructive"
+          size="sm"
+          className="h-6 w-6 p-0 bg-red-500/80 backdrop-blur-sm hover:bg-red-600/90"
+          onClick={() => removeWidget(widget.id)}
+        >
+          <X className="h-3 w-3" />
+        </Button>
       </div>
 
       {/* Widget Content */}

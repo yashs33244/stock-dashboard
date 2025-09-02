@@ -18,7 +18,7 @@ export function useMostActiveStocks({
 }: UseMostActiveStocksOptions) {
     return useQuery({
         queryKey: queryKeys.stocks.mostActive(provider),
-        queryFn: async (): Promise<MostActiveData[]> => {
+        queryFn: async (): Promise<{ data: MostActiveData[], isMockData: boolean, rateLimitMessage?: string }> => {
             const response = await fetch('/api/stocks/most-active', {
                 method: 'POST',
                 headers: {
@@ -39,7 +39,11 @@ export function useMostActiveStocks({
                 throw new Error(result.error)
             }
 
-            return result.data
+            return {
+                data: result.data,
+                isMockData: result.isMockData || false,
+                rateLimitMessage: result.rateLimitMessage
+            }
         },
         enabled,
         refetchInterval,

@@ -22,7 +22,7 @@ export function useStockNews({
 }: UseStockNewsOptions) {
     return useQuery({
         queryKey: queryKeys.stocks.news(provider, topics, limit),
-        queryFn: async (): Promise<NewsData[]> => {
+        queryFn: async (): Promise<{ data: NewsData[], isMockData: boolean, rateLimitMessage?: string }> => {
             const response = await fetch('/api/stocks/news', {
                 method: 'POST',
                 headers: {
@@ -45,7 +45,11 @@ export function useStockNews({
                 throw new Error(result.error)
             }
 
-            return result.data
+            return {
+                data: result.data,
+                isMockData: result.isMockData || false,
+                rateLimitMessage: result.rateLimitMessage
+            }
         },
         enabled,
         refetchInterval,

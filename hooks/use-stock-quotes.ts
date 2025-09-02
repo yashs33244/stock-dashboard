@@ -20,7 +20,7 @@ export function useStockQuotes({
 }: UseStockQuotesOptions) {
     return useQuery({
         queryKey: queryKeys.stocks.quotes(provider, symbols),
-        queryFn: async (): Promise<StockData[]> => {
+        queryFn: async (): Promise<{ data: StockData[], isMockData: boolean, rateLimitMessage?: string }> => {
             const response = await fetch('/api/stocks/quote', {
                 method: 'POST',
                 headers: {
@@ -42,7 +42,11 @@ export function useStockQuotes({
                 throw new Error(result.error)
             }
 
-            return result.data
+            return {
+                data: result.data,
+                isMockData: result.isMockData || false,
+                rateLimitMessage: result.rateLimitMessage
+            }
         },
         enabled: enabled && symbols.length > 0,
         refetchInterval,

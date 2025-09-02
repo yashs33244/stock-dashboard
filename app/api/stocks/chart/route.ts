@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { APIFactory } from "@/lib/api"
+import { detectRateLimit } from "@/lib/rate-limit-detector"
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,15 +30,28 @@ export async function POST(request: NextRequest) {
     }
 
     const api = APIFactory.createAPI(provider, apiKey)
+    let isRateLimited = false
+    let rateLimitMessage = ""
 
     let chartData
     if (provider === "alphavantage") {
       chartData = await api.getIntradayData(symbol, interval || "5min")
+      // Check if we got mock data (indicates rate limiting)
+      if (chartData && chartData.length > 0) {
+        const sampleData = chartData[0]
+        if (sampleData && typeof sampleData.close === 'number' && sampleData.close > 0) {
+          // This is likely real data, not mock
+          isRateLimited = false
+        }
+      }
     } else if (provider === "finnhub") {
       const to = Math.floor(Date.now() / 1000)
       const from = to - 30 * 24 * 60 * 60 // 30 days ago
       chartData = await api.getCandles(symbol, "D", from, to)
     } else {
+      // For indianstock or other providers, generate mock data
+      isRateLimited = true
+      rateLimitMessage = "Provider not fully supported, showing sample data"
       const now = new Date()
       chartData = Array.from({ length: 50 }, (_, i) => {
         const timestamp = new Date(now.getTime() - (49 - i) * 5 * 60 * 1000)
@@ -54,7 +68,11 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    return NextResponse.json({ data: chartData })
+    return NextResponse.json({ 
+      data: chartData,
+      isMockData: isRateLimited,
+      rateLimitMessage: isRateLimited ? rateLimitMessage : undefined
+    })
   } catch (error) {
     console.error(" Chart API route error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

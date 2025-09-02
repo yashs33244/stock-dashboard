@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -17,7 +17,7 @@ interface FinanceCardWidgetProps {
 
 export function FinanceCardWidget({ widget, onUpdate, onConfigure }: FinanceCardWidgetProps) {
   const {
-    data: stocks,
+    data: stocksResponse,
     isLoading: loading,
     error,
     refetch: forceRefresh,
@@ -27,6 +27,8 @@ export function FinanceCardWidget({ widget, onUpdate, onConfigure }: FinanceCard
     enabled: Boolean(widget.config.symbols?.length),
     refetchInterval: widget.config.refreshInterval || 30000,
   })
+
+  const stocks = useMemo(() => stocksResponse?.data || [], [stocksResponse?.data])
 
   // Update parent component when data changes
   useEffect(() => {

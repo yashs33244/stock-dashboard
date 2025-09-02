@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -20,7 +20,7 @@ export function ChartWidget({ widget, onUpdate, onConfigure }: ChartWidgetProps)
   const [selectedInterval, setSelectedInterval] = useState(widget.config.interval || "5min")
   
   const {
-    data: chartData,
+    data: chartResponse,
     isLoading: loading,
     error,
     refetch: forceRefresh,
@@ -31,6 +31,8 @@ export function ChartWidget({ widget, onUpdate, onConfigure }: ChartWidgetProps)
     enabled: Boolean(widget.config.symbol || widget.config.symbols?.length),
     refetchInterval: widget.config.refreshInterval || 60000, // 1 minute
   })
+
+  const chartData = useMemo(() => chartResponse?.data || [], [chartResponse?.data])
 
   // Update parent component when data changes
   useEffect(() => {

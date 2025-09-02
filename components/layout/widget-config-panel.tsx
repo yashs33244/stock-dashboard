@@ -9,14 +9,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { useDashboardStore } from "@/lib/store"
-import { X, Plus } from "lucide-react"
+import { X, Plus, Trash2 } from "lucide-react"
 
 export function WidgetConfigPanel() {
-  const { selectedWidget, widgets, updateWidget, selectWidget, isConfigPanelOpen, toggleConfigPanel } =
+  const { selectedWidget, widgets, updateWidget, selectWidget, isConfigPanelOpen, toggleConfigPanel, removeWidget } =
     useDashboardStore()
 
   const widget = widgets.find((w) => w.id === selectedWidget)
-  const [localConfig, setLocalConfig] = useState(widget?.config || {})
+  const [localConfig, setLocalConfig] = useState(widget?.config || {
+    apiProvider: "alphavantage" as const,
+    symbols: [],
+    refreshInterval: 30000,
+  })
   const [localTitle, setLocalTitle] = useState(widget?.title || "")
   const [newSymbol, setNewSymbol] = useState("")
 
@@ -39,6 +43,13 @@ export function WidgetConfigPanel() {
     toggleConfigPanel()
   }
 
+  const handleRemoveWidget = () => {
+    if (selectedWidget) {
+      removeWidget(selectedWidget)
+      toggleConfigPanel()
+    }
+  }
+
   const handleAddSymbol = () => {
     if (newSymbol.trim()) {
       const currentSymbols = localConfig.symbols || []
@@ -54,7 +65,7 @@ export function WidgetConfigPanel() {
     const currentSymbols = localConfig.symbols || []
     setLocalConfig({
       ...localConfig,
-      symbols: currentSymbols.filter((symbol) => symbol !== symbolToRemove),
+      symbols: currentSymbols.filter((symbol: string) => symbol !== symbolToRemove),
     })
   }
 
@@ -149,7 +160,7 @@ export function WidgetConfigPanel() {
               </div>
 
               <div className="flex flex-wrap gap-2">
-                {(localConfig.symbols || []).map((symbol) => (
+                {(localConfig.symbols || []).map((symbol: string) => (
                   <Badge key={symbol} variant="secondary" className="flex items-center space-x-1">
                     <span>{symbol}</span>
                     <button onClick={() => handleRemoveSymbol(symbol)} className="ml-1 hover:text-destructive">
@@ -246,6 +257,21 @@ export function WidgetConfigPanel() {
             </Button>
             <Button variant="outline" onClick={toggleConfigPanel} className="flex-1 bg-transparent">
               Cancel
+            </Button>
+          </div>
+
+          {/* Remove Widget Section */}
+          <Separator />
+          
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-red-400">Danger Zone</h3>
+            <Button 
+              variant="destructive" 
+              onClick={handleRemoveWidget}
+              className="w-full"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Remove Widget
             </Button>
           </div>
         </div>

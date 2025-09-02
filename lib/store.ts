@@ -4,7 +4,7 @@ import { DashboardStorage } from "./storage"
 
 export interface Widget {
   id: string
-  type: "table" | "card" | "chart"
+  type: "table" | "card" | "chart" | "news" | "mostActive" | "technicalIndicators" | "companyProfile" | "earnings" | "priceChart"
   title: string
   position: { x: number; y: number }
   size: { width: number; height: number }
@@ -16,6 +16,8 @@ export interface Widget {
     refreshInterval?: number
     fields?: string[]
     cardType?: "watchlist" | "gainers" | "losers" | "volume"
+    topics?: string
+    limit?: number
   }
   data?: any
   lastUpdated?: number

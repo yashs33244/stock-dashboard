@@ -55,7 +55,7 @@ export function ConnectionStatus() {
           <div className="text-sm">
             <p>Status: {getStatusText()}</p>
             <p>Last Update: {formatLastUpdate()}</p>
-            {error && <p className="text-destructive">Error: {error}</p>}
+            {error && <p className="text-destructive">Error: {error.message}</p>}
           </div>
         </TooltipContent>
       </Tooltip>

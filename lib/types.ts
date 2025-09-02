@@ -50,6 +50,8 @@ export interface MostActiveData {
 export interface ApiResponse<T> {
     data: T
     error?: string
+    isMockData?: boolean
+    rateLimitMessage?: string
 }
 
 // Widget configuration types

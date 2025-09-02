@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,6 +10,8 @@ import { Search, TrendingUp, TrendingDown, Settings, RefreshCw, TableIcon } from
 import { useStockQuotes } from "@/hooks/use-stock-quotes"
 import type { StockData } from "@/lib/types"
 import type { Widget } from "@/lib/store"
+import { MockDataIndicator } from "@/components/ui/mock-data-indicator"
+import { sanitizeErrorForDisplay } from "@/lib/error-sanitizer"
 
 interface StockTableWidgetProps {
   widget: Widget
@@ -23,7 +25,7 @@ export function StockTableWidget({ widget, onUpdate, onConfigure }: StockTableWi
   const itemsPerPage = 10
 
   const {
-    data: stocks,
+    data: stocksResponse,
     isLoading: loading,
     error,
     dataUpdatedAt: lastUpdated,
@@ -34,6 +36,10 @@ export function StockTableWidget({ widget, onUpdate, onConfigure }: StockTableWi
     enabled: Boolean(widget.config.symbols?.length),
     refetchInterval: widget.config.refreshInterval || 30000,
   })
+
+  const stocks = useMemo(() => stocksResponse?.data || [], [stocksResponse?.data])
+  const isMockData = useMemo(() => stocksResponse?.isMockData || false, [stocksResponse?.isMockData])
+  const rateLimitMessage = useMemo(() => stocksResponse?.rateLimitMessage, [stocksResponse?.rateLimitMessage])
 
   // Update parent component when data changes
   useEffect(() => {
@@ -87,6 +93,10 @@ export function StockTableWidget({ widget, onUpdate, onConfigure }: StockTableWi
           </div>
         </div>
         <div className="flex items-center space-x-2">
+          <MockDataIndicator 
+            isMockData={isMockData} 
+            rateLimitMessage={rateLimitMessage}
+          />
           <Button
             variant="ghost"
             size="sm"
@@ -118,7 +128,7 @@ export function StockTableWidget({ widget, onUpdate, onConfigure }: StockTableWi
         </div>
 
         {error && (
-          <div className="text-red-400 text-sm mb-4 p-3 bg-red-900/20 border border-red-800/30 rounded-lg">{error.message}</div>
+          <div className="text-red-400 text-sm mb-4 p-3 bg-red-900/20 border border-red-800/30 rounded-lg">{sanitizeErrorForDisplay(error)}</div>
         )}
 
         {loading && (!stocks || stocks.length === 0) ? (
