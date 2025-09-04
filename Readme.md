@@ -24,7 +24,7 @@
 
 ## 🎯 Project Overview
 
-A modern, responsive finance dashboard built for Groww assignment that provides real-time stock market data visualization with customizable widgets. The application features a drag-and-drop interface, multiple data providers, and comprehensive error handling.
+A modern, responsive finance dashboard built to provide real-time stock market data visualization with customizable widgets. The application features a drag-and-drop interface, multiple data providers, and comprehensive error handling.
 
 ### Key Features
 - **Real-time Data**: Live stock quotes, charts, news, and most active stocks
